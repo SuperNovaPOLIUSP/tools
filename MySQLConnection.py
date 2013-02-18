@@ -1,6 +1,6 @@
 # coding: utf8
 try:
-    from django.db import connections, transaction 
+    from django.db import connection, transaction 
 except:
     import MySQLdb
 class MySQLConnection(object):
@@ -30,7 +30,7 @@ class MySQLConnection(object):
         @author
         """
         try:
-            self.database = connections['default']
+            self.cursor = connection.cursor()
         except:
             self.database = MySQLdb.connect(host = "",
                                  user = "",
@@ -38,7 +38,7 @@ class MySQLConnection(object):
                                  db = "",
                                  use_unicode = True,
                                  charset = 'utf8')
-        self.cursor = self.database.cursor()
+            self.cursor = self.database.cursor()
     def execute(self, query):
         """
          Returns a list containing the rows fatched from the query.
@@ -49,7 +49,11 @@ class MySQLConnection(object):
         """
         self.cursor.execute(query)
         return self.cursor.fetchall()
+
     def commit(self):
-        self.database.commit()
+        try:
+            transaction.commit_unless_managed() #this is how you commit using django
+        except:
+            self.database.commit()
 
 
