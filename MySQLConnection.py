@@ -56,4 +56,19 @@ class MySQLConnection(object):
         except:
             self.database.commit()
 
-
+    def find(self, queryStart, parameters):
+        complements = []
+        for key in parameters:
+            if isinstance(parameters[key],int): 
+                complements.append(key + ' = ' + str(parameters[key]))
+            elif isinstance(parameters[key],str):
+                if key.split('_')[1] == 'equal':
+                    complements.append(key.split('_')[0] + ' = "' + parameters[key] + '"')
+                elif key.split('_')[1] == 'like':
+                    complements.append(key.split('_')[0] + ' RLIKE "' + parameters[key] + '"')
+        if len(complements) > 0:
+            query = queryStart + ' WHERE '
+            query = query + ' AND '.join(complements)
+        else:
+            query = queryStart
+        return self.execute(query)
