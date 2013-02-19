@@ -3,6 +3,7 @@ try:
     from django.db import connection, transaction 
 except:
     import MySQLdb
+from types import *
 class MySQLConnection(object):
 
     """
@@ -59,9 +60,11 @@ class MySQLConnection(object):
     def find(self, queryStart, parameters):
         complements = []
         for key in parameters:
-            if isinstance(parameters[key],int): 
+            if parameters[key] == None:
+                complements.append(key.split('_')[0] + ' is null' ) #Even if there is no _ this will work
+            elif isinstance(parameters[key],int) or isinstance(parameters[key],long): 
                 complements.append(key + ' = ' + str(parameters[key]))
-            elif isinstance(parameters[key],str):
+            elif isinstance(parameters[key],str) or isinstance(parameters[key],unicode):
                 if key.split('_')[1] == 'equal':
                     complements.append(key.split('_')[0] + ' = "' + parameters[key] + '"')
                 elif key.split('_')[1] == 'like':
