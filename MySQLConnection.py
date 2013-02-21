@@ -68,7 +68,7 @@ class MySQLConnection(object):
                 if key.split('_')[1] == 'equal':
                     complements.append(key.split('_')[0] + ' = "' + parameters[key] + '"')
                 elif key.split('_')[1] == 'like':
-                    complements.append(key.split('_')[0] + ' RLIKE "' + parameters[key] + '"')
+                    complements.append(key.split('_')[0] + ' LIKE "%%' + parameters[key] + '%%"')
         if len(complements) > 0:
             query = queryStart + ' WHERE '
             query = query + ' AND '.join(complements)
