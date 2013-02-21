@@ -3,6 +3,8 @@ try:
     from django.db import connection, transaction 
 except:
     import MySQLdb
+    import codecs
+
 from types import *
 class MySQLConnection(object):
 
@@ -33,16 +35,23 @@ class MySQLConnection(object):
         try:
             self.cursor = connection.cursor()
         except:
-            self.database = MySQLdb.connect(host = "",
-                                 user = "",
-                                 passwd = "",
-                                 db = "",
-                                 use_unicode = True,
-                                 charset = 'utf8')
+
+            # reads database connection settings from file
+
+            inputConfiguracoesBD = codecs.open('./configuracoes.bd', 'r', 'utf-8')
+
+            self.database = MySQLdb.connect(host = inputConfiguracoesBD.readline()[:-1],
+                                            user = inputConfiguracoesBD.readline()[:-1],
+                                            passwd = inputConfiguracoesBD.readline()[:-1],
+                                            db = inputConfiguracoesBD.readline()[:-1],
+                                            use_unicode = True,                                
+                                            charset = 'utf8')
+
             self.cursor = self.database.cursor()
+
     def execute(self, query):
         """
-         Returns a list containing the rows fatched from the query.
+         Returns a list containing the rows fetched from the query.
 
         @param string query : 
         @return  :
@@ -53,7 +62,7 @@ class MySQLConnection(object):
 
     def commit(self):
         try:
-            transaction.commit_unless_managed() #this is how you commit using django
+            transaction.commit_unless_managed() #this is how commits must be done using django
         except:
             self.database.commit()
 
@@ -61,10 +70,10 @@ class MySQLConnection(object):
         complements = []
         for key in parameters:
             if parameters[key] == None:
-                complements.append(key.split('_')[0] + ' is null' ) #Even if there is no _ this will work
-            elif isinstance(parameters[key],int) or isinstance(parameters[key],long): 
+                complements.append(key.split('_')[0] + ' is null') #Even if there is no _ this will work
+            elif isinstance(parameters[key], int) or isinstance(parameters[key], long): 
                 complements.append(key + ' = ' + str(parameters[key]))
-            elif isinstance(parameters[key],str) or isinstance(parameters[key],unicode):
+            elif isinstance(parameters[key], str) or isinstance(parameters[key], unicode):
                 if key.split('_')[1] == 'equal':
                     complements.append(key.split('_')[0] + ' = "' + parameters[key] + '"')
                 elif key.split('_')[1] == 'like':
