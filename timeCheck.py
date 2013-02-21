@@ -23,3 +23,26 @@ def checkTimeString(string_time):
         print "string must be in format 'HH:MM:SS'"
         return None
     return split_string[0] + ":" + split_string[1] + ":" + split_string[2]
+    
+def checkDateString(string_date):
+    try:
+        split_string = string_date.split("-")
+    except:
+        print "Wrong date format"
+        return None
+    if len(split_string) == 3 and len(split_string[0]) == 4 and len(split_string[1]) == 2 and len(split_string[2]) == 2:
+        try:
+            split_string = (int(split_string[0]), int(split_string[1]), int(split_string[2]))
+        except:
+            print "Wrong date format"
+            return None
+        if split_string[1] <= 0 or split_string[1] > 12:
+            print "Wrong date format"
+            return None
+        if split_string[2] <= 0 or split_string[1] > 31:
+            print "Wrong date format"
+            return None
+    else:
+        print "Wrong date format"
+        return None
+    return string_date
