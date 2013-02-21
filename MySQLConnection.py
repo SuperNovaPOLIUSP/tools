@@ -1,4 +1,5 @@
 # coding: utf8
+
 try:
     from django.db import connection, transaction 
 except:
@@ -6,6 +7,7 @@ except:
     import codecs
 
 from types import *
+
 class MySQLConnection(object):
 
     """
@@ -38,7 +40,7 @@ class MySQLConnection(object):
 
             # reads database connection settings from file
 
-            inputConfiguracoesBD = codecs.open('./configuracoes.bd', 'r', 'utf-8')
+            inputConfiguracoesBD = codecs.open('./settings.db', 'r', 'utf-8')
 
             self.database = MySQLdb.connect(host = inputConfiguracoesBD.readline()[:-1],
                                             user = inputConfiguracoesBD.readline()[:-1],
@@ -84,3 +86,12 @@ class MySQLConnection(object):
         else:
             query = queryStart
         return self.execute(query)
+
+class MySQLQueryError(Exception):
+    """
+     Exception reporting an error in the execution of a MySQL query.
+
+    :version:
+    :author:
+    """
+    pass
