@@ -22,4 +22,4 @@ def checkTimeString(string_time):
     else:
         print "string must be in format 'HH:MM:SS'"
         return None
-    return = split_string[0] + ":" + split_string[1] + ":" + split_string[2]
+    return split_string[0] + ":" + split_string[1] + ":" + split_string[2]
