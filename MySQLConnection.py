@@ -73,9 +73,9 @@ class MySQLConnection(object):
         for key in parameters:
             if parameters[key] == None:
                 complements.append(key.split('_')[0] + ' is null') #Even if there is no _ this will work
-            elif isinstance(parameters[key], int) or isinstance(parameters[key], long): 
+            elif isinstance(parameters[key], (int, long)): 
                 complements.append(key + ' = ' + str(parameters[key]))
-            elif isinstance(parameters[key], str) or isinstance(parameters[key], unicode):
+            elif isinstance(parameters[key], (str, unicode)):
                 if key.split('_')[1] == 'equal':
                     complements.append(key.split('_')[0] + ' = "' + parameters[key] + '"')
                 elif key.split('_')[1] == 'like':
