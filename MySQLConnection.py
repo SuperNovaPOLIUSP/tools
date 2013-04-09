@@ -80,6 +80,21 @@ class MySQLConnection(object):
                     complements.append(key.split('_')[0] + ' = "' + parameters[key] + '"')
                 elif key.split('_')[1] == 'like':
                     complements.append(key.split('_')[0] + ' LIKE "%%' + parameters[key] + '%%"')
+            elif isinstance(parameters[key], list):
+                #When using multiple terms they are OR
+                tempComplements = []
+                for parameter in parameters[key]:
+                    if parameter == None:
+                        tempComplements.append(key.split('_')[0] + ' is null') #Even if there is no _ this will work
+                    elif isinstance(parameter, (int, long)): 
+                        tempComplements.append(key + ' = ' + str(parameter))
+                    elif isinstance(parameter, (str, unicode)):
+                        if key.split('_')[1] == 'equal':
+                            tempComplements.append(key.split('_')[0] + ' = "' + parameter + '"')
+                        elif key.split('_')[1] == 'like':
+                            tempComplements.append(key.split('_')[0] + ' LIKE "%%' + parameter + '%%"')
+                complements.append('(' + ' OR '.join(tempComplements) + ')')
+       
         if len(complements) > 0:
             query = queryStart + ' WHERE '
             query = query + ' AND '.join(complements)
