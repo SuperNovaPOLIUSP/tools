@@ -36,10 +36,10 @@ def checkDateString(string_date):
         except:
             print "Wrong date format"
             return False
-        if split_string[1] <= 0 or split_string[1] > 12:
+        if split_string[1] < 0 or split_string[1] > 12:
             print "Wrong date format"
             return False
-        if split_string[2] <= 0 or split_string[1] > 31:
+        if split_string[2] < 0 or split_string[1] > 31:
             print "Wrong date format"
             return False
     else:
