@@ -68,7 +68,7 @@ class MySQLConnection(object):
         except:
             self.database.commit()
 
-    def find(self, queryStart, parameters):
+    def find(self, queryStart, parameters, queryEnd = ''):
         complements = []
         for key in parameters:
             if parameters[key] == None:
@@ -100,6 +100,7 @@ class MySQLConnection(object):
             query = query + ' AND '.join(complements)
         else:
             query = queryStart
+        query = query + queryEnd
         return self.execute(query)
 
 class MySQLQueryError(Exception):
