@@ -1,12 +1,18 @@
 # coding: utf8
 
+from _mysql import OperationalError
+import time
+from types import *
+
+
 try:
     from django.db import connection, transaction 
 except:
     import MySQLdb
     import codecs
+    
+MAXTRIES = 8
 
-from types import *
 
 class MySQLConnection(object):
 
@@ -41,13 +47,25 @@ class MySQLConnection(object):
             # reads database connection settings from file
 
             inputConfiguracoesBD = codecs.open('./settings.db', 'r', 'utf-8')
+            tries = 0
+            host_name = inputConfiguracoesBD.readline()[:-1]
+            user_name = inputConfiguracoesBD.readline()[:-1]
+            password = inputConfiguracoesBD.readline()[:-1]
+            database_name = inputConfiguracoesBD.readline()[:-1]
 
-            self.database = MySQLdb.connect(host = inputConfiguracoesBD.readline()[:-1],
-                                            user = inputConfiguracoesBD.readline()[:-1],
-                                            passwd = inputConfiguracoesBD.readline()[:-1],
-                                            db = inputConfiguracoesBD.readline()[:-1],
-                                            use_unicode = True,                                
-                                            charset = 'utf8')
+            while tries < MAXTRIES:
+                try:
+                    self.database = MySQLdb.connect(host = host_name,
+                                                    user = user_name,
+                                                    passwd = password,
+                                                    db = database_name,
+                                                    use_unicode = True,                                
+                                                    charset = 'utf8')
+                    break
+                except OperationalError:
+                    tries += 1
+                    print 'Error no: ' + str(tries)
+                    time.sleep(5)
 
             self.cursor = self.database.cursor()
 

@@ -46,3 +46,9 @@ def checkDateString(string_date):
         print "Wrong date format"
         return False
     return True
+
+def formatHour(string_hour):
+    # 7 character maps to H:MM:SS instead of HH:MM:SS
+    if len(string_hour) == 7:
+        string_hour = '0' + string_hour
+    return string_hour
