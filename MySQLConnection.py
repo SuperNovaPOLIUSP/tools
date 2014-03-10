@@ -1,73 +1,57 @@
 # coding: utf8
 
 from _mysql import OperationalError
+import os
 import time
-from types import *
-
-
-try:
-    from django.db import connection, transaction 
-except:
-    import MySQLdb
-    import codecs
+import MySQLdb
+import codecs
     
-MAXTRIES = 8
+MAXTRIES = 8  # Maximum number of tries before stop trying to connect
+SLEEPTIMER = 5  # Number of seconds to wait before each try
+MAXDEPTH = 2  # Maximum depth of the search for the configurations file
 
 
 class MySQLConnection(object):
-
     """
-     
-
-    :version:
-    :author:
+    :version: 
+    :author: 
     """
-
     """ ATTRIBUTES
-
-     
-
     cursor  (public)
-
     """
-
-
+    __singleton = None  # TODO
 
     def __init__(self):
         """
          When initialized the attribute cursor gets django's MySQL cursor.
-
         @return  :
         @author
         """
-        try:
-            self.cursor = connection.cursor()
-        except:
+        # reads database connection settings from file
+        filepath = findFile('settings.db', '.')
+        inputConfiguracoesBD = codecs.open(filepath, 'r', 'utf-8')
+        tries = 0
+        host_name = inputConfiguracoesBD.readline()[:-1]
+        user_name = inputConfiguracoesBD.readline()[:-1]
+        password = inputConfiguracoesBD.readline()[:-1]
+        database_name = inputConfiguracoesBD.readline()[:-1]
 
-            # reads database connection settings from file
+        while tries < MAXTRIES:
+            try:
+                self.database = MySQLdb.connect(host = host_name,
+                                                user = user_name,
+                                                passwd = password,
+                                                db = database_name,
+                                                use_unicode = True,                                
+                                                charset = 'utf8')
+                break
+            except OperationalError:
+                tries += 1
+                print 'Error no: ' + str(tries)
+                time.sleep(SLEEPTIMER)
 
-            inputConfiguracoesBD = codecs.open('./settings.db', 'r', 'utf-8')
-            tries = 0
-            host_name = inputConfiguracoesBD.readline()[:-1]
-            user_name = inputConfiguracoesBD.readline()[:-1]
-            password = inputConfiguracoesBD.readline()[:-1]
-            database_name = inputConfiguracoesBD.readline()[:-1]
-
-            while tries < MAXTRIES:
-                try:
-                    self.database = MySQLdb.connect(host = host_name,
-                                                    user = user_name,
-                                                    passwd = password,
-                                                    db = database_name,
-                                                    use_unicode = True,                                
-                                                    charset = 'utf8')
-                    break
-                except OperationalError:
-                    tries += 1
-                    print 'Error no: ' + str(tries)
-                    time.sleep(5)
-
-            self.cursor = self.database.cursor()
+        self.cursor = self.database.cursor()           
+        MySQLConnection.__singleton = self 
 
     def execute(self, query):
         """
@@ -81,10 +65,7 @@ class MySQLConnection(object):
         return self.cursor.fetchall()
 
     def commit(self):
-        try:
-            transaction.commit_unless_managed() #this is how commits must be done using django
-        except:
-            self.database.commit()
+        self.database.commit()
 
     def find(self, queryStart, parameters, queryEnd = ''):
         complements = []
@@ -120,7 +101,24 @@ class MySQLConnection(object):
             query = queryStart
         query = query + queryEnd
         return self.execute(query)
-
+    
+    def close(self):
+        self.database.close()
+    
+def findFile(name, startingFolder, depth = 0):
+    if depth > MAXDEPTH:
+        return None
+    found = False
+    for root, dirs, files in os.walk(startingFolder):
+        for f in files:
+            if f == name:
+                fullpath = os.path.join(root, f)
+                found = True
+    if not found:
+        startingFolder = '../' + startingFolder
+        return findFile(name, startingFolder, depth + 1)
+    return fullpath
+        
 class MySQLQueryError(Exception):
     """
      Exception reporting an error in the execution of a MySQL query.
