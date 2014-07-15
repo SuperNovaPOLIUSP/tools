@@ -1,6 +1,7 @@
 # coding: utf8
 
 from _mysql import OperationalError
+from django.conf import settings
 import os
 import time
 import MySQLdb
@@ -8,7 +9,7 @@ import codecs
     
 MAXTRIES = 8  # Maximum number of tries before stop trying to connect
 SLEEPTIMER = 5  # Number of seconds to wait before each try
-MAXDEPTH = 2  # Maximum depth of the search for the configurations file
+MAXDEPTH = 1  # Maximum depth of the search for the configurations file
 
 
 class MySQLConnection(object):
@@ -28,8 +29,7 @@ class MySQLConnection(object):
         @author
         """
         # reads database connection settings from file
-        filepath = findFile('settings.db', '.')
-        inputConfiguracoesBD = codecs.open(filepath, 'r', 'utf-8')
+        inputConfiguracoesBD = codecs.open(settings.ARQUIVO_CONF_BD, 'r', 'utf-8')
         tries = 0
         host_name = inputConfiguracoesBD.readline()[:-1]
         user_name = inputConfiguracoesBD.readline()[:-1]
@@ -104,20 +104,6 @@ class MySQLConnection(object):
     
     def close(self):
         self.database.close()
-    
-def findFile(name, startingFolder, depth = 0):
-    if depth > MAXDEPTH:
-        return None
-    found = False
-    for root, dirs, files in os.walk(startingFolder):
-        for f in files:
-            if f == name:
-                fullpath = os.path.join(root, f)
-                found = True
-    if not found:
-        startingFolder = '../' + startingFolder
-        return findFile(name, startingFolder, depth + 1)
-    return fullpath
         
 class MySQLQueryError(Exception):
     """
