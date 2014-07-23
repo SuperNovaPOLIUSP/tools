@@ -3,15 +3,10 @@
 from django.db import connections
 
 
-MAXTRIES = 8  # Maximum number of tries before stop trying to connect
-SLEEPTIMER = 5  # Number of seconds to wait before each try
-MAXDEPTH = 1  # Maximum depth of the search for the configurations file
-
-
 class MySQLConnection(object):
     """
-    :version: 
-    :author: 
+    :version:
+    :author:
     """
     """ ATTRIBUTES
     cursor  (public)
@@ -30,7 +25,7 @@ class MySQLConnection(object):
         """
          Returns a list containing the rows fetched from the query.
 
-        @param string query : 
+        @param string query :
         @return  :
         @author
         """
@@ -40,33 +35,40 @@ class MySQLConnection(object):
             print 'ERROR: ' + str(e) + '\n' + 'Query: ' + query
         return self.cursor.fetchall()
 
-    def find(self, queryStart, parameters, queryEnd = ''):
+    def find(self, queryStart, parameters, queryEnd=''):
         complements = []
         for key in parameters:
-            if parameters[key] == None:
-                complements.append(key.split('_')[0] + ' is null') #Even if there is no _ this will work
-            elif isinstance(parameters[key], (int, long)): 
+            if parameters[key] is None:
+                # Even if there is no _ this will work
+                complements.append(key.split('_')[0] + ' is null')
+            elif isinstance(parameters[key], (int, long)):
                 complements.append(key + ' = ' + str(parameters[key]))
             elif isinstance(parameters[key], (str, unicode)):
                 if key.split('_')[1] == 'equal':
-                    complements.append(key.split('_')[0] + ' = "' + parameters[key] + '"')
+                    complements.append(key.split('_')[0] + ' = "' +
+                                       parameters[key] + '"')
                 elif key.split('_')[1] == 'like':
-                    complements.append(key.split('_')[0] + ' LIKE "%%' + parameters[key] + '%%"')
+                    complements.append(key.split('_')[0] + ' LIKE "%%' +
+                                       parameters[key] + '%%"')
             elif isinstance(parameters[key], list):
                 #When using multiple terms they are OR
                 tempComplements = []
                 for parameter in parameters[key]:
-                    if parameter == None:
-                        tempComplements.append(key.split('_')[0] + ' is null') #Even if there is no _ this will work
-                    elif isinstance(parameter, (int, long)): 
+                    if parameter is None:
+                        # Even if there is no _ this will work
+                        tempComplements.append(key.split('_')[0] + ' is null')
+                    elif isinstance(parameter, (int, long)):
                         tempComplements.append(key + ' = ' + str(parameter))
                     elif isinstance(parameter, (str, unicode)):
                         if key.split('_')[1] == 'equal':
-                            tempComplements.append(key.split('_')[0] + ' = "' + parameter + '"')
+                            tempComplements.append(key.split('_')[0] + ' = "' +
+                                                   parameter + '"')
                         elif key.split('_')[1] == 'like':
-                            tempComplements.append(key.split('_')[0] + ' LIKE "%%' + parameter + '%%"')
+                            tempComplements.append(key.split('_')[0] +
+                                                   ' LIKE "%%' + parameter +
+                                                   '%%"')
                 complements.append('(' + ' OR '.join(tempComplements) + ')')
-       
+
         if len(complements) > 0:
             query = queryStart + ' WHERE '
             query = query + ' AND '.join(complements)
@@ -74,7 +76,8 @@ class MySQLConnection(object):
             query = queryStart
         query = query + queryEnd
         return self.execute(query)
-        
+
+
 class MySQLQueryError(Exception):
     """
      Exception reporting an error in the execution of a MySQL query.
