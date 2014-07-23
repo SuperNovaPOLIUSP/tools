@@ -1,12 +1,15 @@
 # coding: utf8
 
-from _mysql import OperationalError
-from django.conf import settings
-import os
-import time
 import MySQLdb
+from _mysql import OperationalError
 import codecs
-    
+from django.conf import settings
+from django.db import connections
+import os
+import sys
+import time
+
+
 MAXTRIES = 8  # Maximum number of tries before stop trying to connect
 SLEEPTIMER = 5  # Number of seconds to wait before each try
 MAXDEPTH = 1  # Maximum depth of the search for the configurations file
@@ -20,7 +23,6 @@ class MySQLConnection(object):
     """ ATTRIBUTES
     cursor  (public)
     """
-    __singleton = None  # TODO
 
     def __init__(self):
         """
@@ -29,29 +31,7 @@ class MySQLConnection(object):
         @author
         """
         # reads database connection settings from file
-        inputConfiguracoesBD = codecs.open(settings.ARQUIVO_CONF_BD, 'r', 'utf-8')
-        tries = 0
-        host_name = inputConfiguracoesBD.readline()[:-1]
-        user_name = inputConfiguracoesBD.readline()[:-1]
-        password = inputConfiguracoesBD.readline()[:-1]
-        database_name = inputConfiguracoesBD.readline()[:-1]
-
-        while tries < MAXTRIES:
-            try:
-                self.database = MySQLdb.connect(host = host_name,
-                                                user = user_name,
-                                                passwd = password,
-                                                db = database_name,
-                                                use_unicode = True,                                
-                                                charset = 'utf8')
-                break
-            except OperationalError:
-                tries += 1
-                print 'Error no: ' + str(tries)
-                time.sleep(SLEEPTIMER)
-
-        self.cursor = self.database.cursor()           
-        MySQLConnection.__singleton = self 
+        self.cursor = connections['supernova'].cursor()
 
     def execute(self, query):
         """
@@ -61,11 +41,11 @@ class MySQLConnection(object):
         @return  :
         @author
         """
-        self.cursor.execute(query)
+        try:
+            self.cursor.execute(query)
+        except Exception, e:
+            print 'ERROR: ' + str(e) + '\n' + 'Query: ' + query
         return self.cursor.fetchall()
-
-    def commit(self):
-        self.database.commit()
 
     def find(self, queryStart, parameters, queryEnd = ''):
         complements = []
@@ -101,9 +81,6 @@ class MySQLConnection(object):
             query = queryStart
         query = query + queryEnd
         return self.execute(query)
-    
-    def close(self):
-        self.database.close()
         
 class MySQLQueryError(Exception):
     """
