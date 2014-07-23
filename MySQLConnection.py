@@ -1,13 +1,6 @@
 # coding: utf8
 
-import MySQLdb
-from _mysql import OperationalError
-import codecs
-from django.conf import settings
 from django.db import connections
-import os
-import sys
-import time
 
 
 MAXTRIES = 8  # Maximum number of tries before stop trying to connect
@@ -24,14 +17,14 @@ class MySQLConnection(object):
     cursor  (public)
     """
 
-    def __init__(self):
+    def __init__(self, database='supernova'):
         """
          When initialized the attribute cursor gets django's MySQL cursor.
         @return  :
         @author
         """
         # reads database connection settings from file
-        self.cursor = connections['supernova'].cursor()
+        self.cursor = connections[database].cursor()
 
     def execute(self, query):
         """
