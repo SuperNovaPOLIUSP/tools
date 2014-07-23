@@ -1,4 +1,5 @@
 .*~
+*.coverage
 *.py~
 *.tex~
 *.html~
@@ -6,5 +7,6 @@
 *.swp
 .*.swp
 .htaccess
+tests/htmlcov*
 settings.py
 settings.db
